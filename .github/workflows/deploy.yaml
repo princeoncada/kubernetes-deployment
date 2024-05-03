@@ -1,0 +1,59 @@
+name: Deploy MultiK8s
+on:
+  push:
+    branches:
+      - main
+ 
+env:
+  SHA: $(git rev-parse HEAD)
+ 
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+ 
+      - name: Test
+        run: |-
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          docker build -t react-test -f ./client/Dockerfile.dev ./client
+          docker run react-test npm test
+ 
+      - name: Set Service Key
+        uses: 'google-github-actions/auth@v0'
+        with:
+          credentials_json: '${{ secrets.GKE_SA_KEY }}'
+ 
+      - name: Set Project
+        uses: google-github-actions/setup-gcloud@v0
+        with:
+          project_id: multi-k8s-422217
+ 
+      - name: Auth
+        run: |-
+          gcloud --quiet auth configure-docker
+ 
+      - name: Get Credentials
+        uses: google-github-actions/get-gke-credentials@v0
+        with:
+          cluster_name: multi-cluster
+          location: asia-southeast1-c
+ 
+      - name: Build
+        run: |-
+          docker build -t pgsoncada/self-client:latest -t pgsoncada/self-client:${{ env.SHA }} -f ./client/Dockerfile ./client
+          docker build -t pgsoncada/self-server:latest -t pgsoncada/self-server:${{ env.SHA }} -f ./server/Dockerfile ./server
+ 
+      - name: Push
+        run: |-
+          docker push pgsoncada/self-client:latest
+          docker push pgsoncada/self-server:latest
+ 
+          docker push pgsoncada/self-client:${{ env.SHA }}
+          docker push pgsoncada/self-server:${{ env.SHA }}
+ 
+      - name: Apply
+        run: |-
+          kubectl apply -f k8s
+          kubectl set image deployments/server-deployment server=pgsoncada/self-client:${{ env.SHA }}
+          kubectl set image deployments/client-deployment client=pgsoncada/self-server:${{ env.SHA }}
