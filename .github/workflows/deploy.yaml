@@ -54,6 +54,10 @@ jobs:
  
       - name: Apply
         run: |-
-          kubectl apply -f k8s
+          kubectl apply -f ./k8s/client-deployment.yaml
+          kubectl apply -f ./k8s/server-deployment.yaml
+          kubectl apply -f ./k8s/client-cluster-ip-service.yaml
+          kubectl apply -f ./k8s/server-cluster-ip-service.yaml
+          kubectl apply -f ./k8s/ingress-service.yaml
           kubectl set image deployments/server-deployment server=pgsoncada/self-client:${{ env.SHA }}
           kubectl set image deployments/client-deployment client=pgsoncada/self-server:${{ env.SHA }}
