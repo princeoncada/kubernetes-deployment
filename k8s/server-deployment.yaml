@@ -3,17 +3,17 @@ kind: Deployment
 metadata:
   name: server-deployment
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
-        component: server
+      component: server
   template:
     metadata:
       labels:
-        component: server # Used in server-cluster-ip-service.yaml
+        component: server
     spec:
       containers:
-      - name: server
-        image: pgsoncada/server-image
-        ports:
-        - containerPort: 5000
+        - name: server
+          image: pgsoncada/server-image
+          ports:
+            - containerPort: 5000

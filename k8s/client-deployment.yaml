@@ -3,17 +3,17 @@ kind: Deployment
 metadata:
   name: client-deployment
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
-      component: client
+      component: web
   template:
     metadata:
       labels:
-        component: client # Used in client-cluster-ip-service.yaml
+        component: web
     spec:
       containers:
-      - name: client
-        image: pgsoncada/client-image
-        ports:
-        - containerPort: 3000
+        - name: client
+          image: pgsoncada/client-image
+          ports:
+            - containerPort: 3000
