@@ -7,6 +7,7 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
+// ewan
 app.get('/data', async (req, res) => {
     try {
         const rows = [
